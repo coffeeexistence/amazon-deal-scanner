@@ -1,0 +1,2 @@
+class AmazonItem < ApplicationRecord
+end

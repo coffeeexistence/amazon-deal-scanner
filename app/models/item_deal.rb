@@ -1,0 +1,2 @@
+class ItemDeal < ApplicationRecord
+end

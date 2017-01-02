@@ -1,0 +1,17 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  ean: 1
+  upc: 1
+  asin: MyString
+  isbn: MyString
+  list_price: 1.5
+  title: MyString
+
+two:
+  ean: 1
+  upc: 1
+  asin: MyString
+  isbn: MyString
+  list_price: 1.5
+  title: MyString
