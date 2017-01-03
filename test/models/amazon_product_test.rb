@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class AmazonItemTest < ActiveSupport::TestCase
+class AmazonProductTest < ActiveSupport::TestCase
   # test "the truth" do
   #   assert true
   # end

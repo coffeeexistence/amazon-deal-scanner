@@ -10,9 +10,12 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170102050851) do
+ActiveRecord::Schema.define(version: 20170102084415) do
 
-  create_table "amazon_items", force: :cascade do |t|
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "plpgsql"
+
+  create_table "amazon_products", force: :cascade do |t|
     t.integer  "ean"
     t.integer  "upc"
     t.string   "asin"
@@ -20,18 +23,39 @@ ActiveRecord::Schema.define(version: 20170102050851) do
     t.float    "list_price"
     t.string   "title"
     t.text     "data"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.string   "product_group"
+    t.string   "currency"
+    t.datetime "last_indexed_for_deals"
+    t.string   "product_search_task_id"
+    t.string   "status",                 default: "pending"
+    t.datetime "created_at",                                 null: false
+    t.datetime "updated_at",                                 null: false
   end
 
   create_table "item_deals", force: :cascade do |t|
-    t.integer  "amazon_item_id"
+    t.string   "type"
+    t.integer  "amazon_product_id"
     t.float    "price"
+    t.string   "currency"
     t.string   "title"
     t.string   "url"
     t.text     "data"
-    t.datetime "created_at",     null: false
-    t.datetime "updated_at",     null: false
+    t.integer  "item_search_id"
+    t.datetime "created_at",        null: false
+    t.datetime "updated_at",        null: false
+  end
+
+  create_table "product_search_tasks", force: :cascade do |t|
+    t.string   "type"
+    t.integer  "current_page",         default: 1
+    t.integer  "page_limit",           default: 20
+    t.integer  "last_page"
+    t.text     "request_data_as_json"
+    t.boolean  "running",              default: true
+    t.text     "error"
+    t.string   "title"
+    t.datetime "created_at",                          null: false
+    t.datetime "updated_at",                          null: false
   end
 
 end
