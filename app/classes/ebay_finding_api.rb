@@ -1,13 +1,10 @@
 class EbayFindingApi
   
-  def self.get_api_response(params, page_number=nil)
-    # params["ItemPage"] = page_number unless page_number.nil?
-    request = self.amazon_request(params)
-    Hash.from_xml(request.body)
-  end
-  
-  def self.api_request(params)
+  def self.get_api_response(params)
+    baseUrl = "http://svcs.ebay.com/services/search/FindingService/v1?"
     query_string = QueryBuilder.query_string_from_hash(params)
+    request = HTTP.get(baseUrl + query_string)
+    Hash.from_xml(request.body)
   end
   
   def self.find_item_by_product(id:, id_type:)
@@ -33,13 +30,7 @@ class EbayFindingApi
   end
   
   def self.search_by_isbn(isbn)
-    
+    self.get_api_response self.find_item_by_product(id: isbn, id_type: "ISBN")
   end
-  
-  def self.item_data_by_asin(asin)
-    params = self.item_data_by_asin_template(asin: asin)
-    self.get_api_response(params)
-  end
-
   
 end

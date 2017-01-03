@@ -9,6 +9,7 @@ class CreateItemDeals < ActiveRecord::Migration[5.0]
       t.string :url
       t.text :data
       t.integer :item_search_id
+      t.datetime :expiration_date
 
       t.timestamps
     end

@@ -1,3 +1,0 @@
-class ItemDeal < ApplicationRecord
-  
-end

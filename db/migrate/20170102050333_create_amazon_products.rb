@@ -1,8 +1,8 @@
 class CreateAmazonProducts < ActiveRecord::Migration[5.0]
   def change
     create_table :amazon_products do |t|
-      t.integer :ean
-      t.integer :upc
+      t.string :ean
+      t.string :upc
       t.string :asin
       t.string :isbn
       t.float :list_price

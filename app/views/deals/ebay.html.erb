@@ -1,0 +1,11 @@
+<h1>Deals#ebay</h1>
+
+<% @deals.each do |deal| %>
+  <h2><%= deal.amazon_product.title %></h2>
+  <p><%= link_to "Ebay price: $"+deal.price.to_s, deal.url %></p>
+  <p><%= link_to "Amazon price: $"+deal.amazon_product.list_price.to_s, deal.amazon_product.url %></p>
+  <br>
+<% end %>
+<p>Find me in app/views/deals/ebay.html.erb</p>
+
+

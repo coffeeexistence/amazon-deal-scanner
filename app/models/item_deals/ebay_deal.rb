@@ -1,3 +1,0 @@
-class EbayDeal < ItemDeal
-  
-end

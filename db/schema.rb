@@ -10,14 +10,14 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170102084415) do
+ActiveRecord::Schema.define(version: 20170103064237) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
   create_table "amazon_products", force: :cascade do |t|
-    t.integer  "ean"
-    t.integer  "upc"
+    t.string   "ean"
+    t.string   "upc"
     t.string   "asin"
     t.string   "isbn"
     t.float    "list_price"
@@ -30,6 +30,7 @@ ActiveRecord::Schema.define(version: 20170102084415) do
     t.string   "status",                 default: "pending"
     t.datetime "created_at",                                 null: false
     t.datetime "updated_at",                                 null: false
+    t.text     "url"
   end
 
   create_table "item_deals", force: :cascade do |t|
@@ -41,6 +42,7 @@ ActiveRecord::Schema.define(version: 20170102084415) do
     t.string   "url"
     t.text     "data"
     t.integer  "item_search_id"
+    t.datetime "expiration_date"
     t.datetime "created_at",        null: false
     t.datetime "updated_at",        null: false
   end
