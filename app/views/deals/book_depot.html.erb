@@ -1,0 +1,53 @@
+<h1>Outer Rim Empire - Book Depot Deals</h1>
+
+<% @books.each do |book| %>
+    <div class="book-depot-book">
+    
+      <% if book.details_loaded %>
+        <div class="title-header">
+          <%= image_tag book.image_src, class: "book-cover-photo" %>
+          <div class="column">
+            <h4><%= book.title %></h4>
+            <h4 class="sales-rank">Sales Rank: <span><%= book.amazon_product.sales_rank %></span></h4>
+          </div>
+          <div class="column book-links">
+            <a href="<%= 'http://www.bookdepot.com' + book.url %>">
+              <button class="button button-outline">Book Depot</button>
+            </a>
+            <a href="<%= book.amazon_product.url %>">
+              <button class="button button-outline">Amazon</button>
+            </a>
+          </div>
+        </div>
+      <% end %>
+      <div class="row center-align-columns">
+        <% if book.details_loaded %>
+        <div class="column">
+          <h4>Break-even:</h4>
+          <h4>$<%= number_with_precision(book.break_even_point, :precision => 2) %></h4>
+        </div>
+        <div class="column">
+          <h4>Amazon:</h4>
+          <h4>$<%= number_with_precision(book.amazon_product.list_price, :precision => 2) %></h4>
+        </div>
+        <% if book.amazon_product.competitor_price %>
+        <div class="column">
+          <h4>Competition:</h4>
+          <h4>$<%= number_with_precision(book.amazon_product.competitor_price, :precision => 2) %></h4>
+        </div>
+        <% end %>
+        <div class="column">
+          <h4>Wholesale:</h4>
+          <h4>$<%= number_with_precision(book.wholesale, :precision => 2) %></h4>
+        </div>
+        
+        <% end %>
+        <div class="column">
+          <h4>ASIN:</h4>
+          <h4><%= book.amazon_product.asin %></h4>
+        </div>
+      </div>
+      <br>
+    
+  </div>
+<% end %>

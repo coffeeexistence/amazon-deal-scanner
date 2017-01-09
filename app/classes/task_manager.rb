@@ -26,10 +26,10 @@ class TaskManager
       @@last_tick = DateTime.now
     end
 
-    if AmazonProduct.pending.count >= 10 # Both almost complete
+    if AmazonProduct.pending.any? # Both almost complete
       output << "\nLoading pending AmazonProducts: "
       output << AmazonProduct.update_pending_product_from_api.to_s
-    elsif AmazonProduct.books.ready.search_due.count >= 10
+    elsif AmazonProduct.books.ready.search_due.any?
       output << "\nFinding Book deals: "
       output << AmazonProduct.find_book_deals.to_s
     else
@@ -49,6 +49,19 @@ class TaskManager
     puts "Ebay Deals: #{deals}"
     puts "Highest Margin found: #{highest_margin}"
     puts "#\n#\n#\n"
+  end
+  
+  def self.all_pages_by_term(term:, page_count:)
+    current_page = 0
+    
+    (page_count).times do |i|
+      begin
+        page = "http://www.bookdepot.com/Store/Browse/_/N-0/No-#{i*48}/Ntk-Default/Ntt-a?terms="
+        WholesaleBook.create_batch_from_book_depot_page(page)
+      rescue
+        puts "FAILED: #{page}"
+      end
+    end
   end
   
 end

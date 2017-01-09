@@ -20,12 +20,12 @@ class EbayFindingApi
       "GLOBAL-ID": "EBAY-US",
       "itemFilter(0).name": "Condition",
       "itemFilter(0).value": "1000",
-      "itemFilter(1).name": "LotsOnly",
-      "itemFilter(1).value": "false",
-      "itemFilter(2).name": "ListingType",
-      "itemFilter(2).value(0)": "FixedPrice",
-      "itemFilter(2).value(1)": "StoreInventory",
-      "itemFilter(2).value(2)": "AuctionWithBIN"
+      # "itemFilter(1).name": "LotsOnly",
+      # "itemFilter(1).value": "true",
+      "itemFilter(1).name": "ListingType",
+      # "itemFilter(2).value(0)": "FixedPrice",
+      "itemFilter(1).value(1)": "StoreInventory",
+      # "itemFilter(2).value(2)": "AuctionWithBIN"
     }
   end
   

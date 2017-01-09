@@ -1,9 +1,22 @@
-<h1>Deals#ebay</h1>
+<h1>Outer Rim Empire - Amazon/eBay Deals</h1>
 
 <% @deals.each do |deal| %>
-  <h2><%= deal.amazon_product.title %></h2>
-  <p><%= link_to "Ebay price: $"+deal.price.to_s, deal.url %></p>
-  <p><%= link_to "Amazon price: $"+deal.amazon_product.list_price.to_s, deal.amazon_product.url %></p>
+  <h3><%= deal.amazon_product.title %></h3>
+  <div class="row">
+    <div class="column">
+      <a href="<%= deal.url %>">
+        <button class="button button-outline">eBay: $<%= number_with_precision(deal.price, :precision => 2) %></button>
+      </a>
+    </div>
+    <div class="column">
+      <a href="<%= deal.amazon_product.url %>">
+        <button class="button button-outline">Amazon: $<%= number_with_precision(deal.amazon_product.list_price, :precision => 2) %></button>
+      </a>
+    </div>
+    <div class="column">
+      Profit Margin: <%= ((deal.base_margin - 1)*100).to_i %>%
+    </div>
+  </div>
   <br>
 <% end %>
 <p>Find me in app/views/deals/ebay.html.erb</p>

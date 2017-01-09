@@ -1,0 +1,68 @@
+<h1>Outer Rim Empire - Amazon/eBay Deals</h1>
+
+<iframe id="iframe" style="height: 700px; width: 700px;"></iframe>
+
+<script>
+  var iframe = document.getElementById('iframe');
+  
+  function productsToScrape(){
+      return $.get('http://localhost:3000/deals/asins_to_scrape');
+  }
+  
+  function addressFromProduct(product){
+    console.log(product.asin);
+    return "http://www.amazon.com/gp/offer-listing/"+product.asin+"/ref=olp_f_primeEligible?ie=UTF8&f_new=true&f_primeEligible=true";
+  }
+  
+  function postPrice(priceText, product){
+    var formattedPrice = priceText.replace(' ', '').replace('$', '');
+    var priceAsFloat = parseFloat(formattedPrice);
+    var url = 'http://localhost:3000/deals/post_fba_competition/' + product.id;
+    var attributes = { competitor_price: priceAsFloat };
+    var params = { amazon_product: attributes };
+    return $.post(url, params);
+  }
+  
+  function getNextPrice(products, index){
+    console.log(index);
+    if(index > products.length-1){
+      console.log('success');
+      return true;
+    }
+    
+    var nextCall = function(){
+      setTimeout(function(){
+        console.log('doing nextCall');
+        getNextPrice(products, index+1);
+      }, (Math.random() * 7000 )+ 2500);
+    };
+    
+    iframe.onload = function(){
+      var node = $(iframe).contents().find(".olpOfferPrice")[0]
+      if(node){
+        console.log('posting price');
+        postPrice(node.textContent, products[index]).then(nextCall);
+      }
+      else {
+        console.warn('iframe node fail');
+        nextCall();
+      }
+    };
+    
+    iframe.src = addressFromProduct(products[index]);
+  }
+  
+  function startScraper(){
+    productsToScrape().then(function(res){
+      console.log(res)
+      getNextPrice(res, 0);
+    });
+  }
+  
+  startScraper();
+  
+</script>
+
+<p>Find me in app/views/deals/ebay.html.erb</p>
+
+

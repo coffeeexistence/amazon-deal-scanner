@@ -1,0 +1,40 @@
+.book-cover-photo {
+  max-height: 180px;
+  padding-right: 20px;
+}
+
+.book-depot-book {
+  margin: 50px 0;
+  background-color: #f1f1f1;
+  border: solid 1px #ddd;
+  border-radius: 10px;
+  padding: 25px;
+}
+
+.title-header {
+  display: flex;
+  flex-direction: row;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #ddd;
+  h4 {
+    text-overflow: ellipsis;
+    max-height: 2.6em;
+    overflow: hidden;
+  }
+}
+
+.book-links {
+  margin-left: auto;
+  padding: 0 0 0 15px;
+  border-left: solid 1px #ddd;
+  display: flex;
+  flex-direction: column;
+  button.button {
+    min-width: 150px;
+  }
+}
+
+.center-align-columns .column {
+  text-align: center;
+}

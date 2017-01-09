@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170103064237) do
+ActiveRecord::Schema.define(version: 20170108094532) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -31,6 +31,8 @@ ActiveRecord::Schema.define(version: 20170103064237) do
     t.datetime "created_at",                                 null: false
     t.datetime "updated_at",                                 null: false
     t.text     "url"
+    t.integer  "sales_rank"
+    t.float    "competitor_price"
   end
 
   create_table "item_deals", force: :cascade do |t|
@@ -58,6 +60,24 @@ ActiveRecord::Schema.define(version: 20170103064237) do
     t.string   "title"
     t.datetime "created_at",                          null: false
     t.datetime "updated_at",                          null: false
+  end
+
+  create_table "wholesale_books", force: :cascade do |t|
+    t.string   "url"
+    t.string   "isbn"
+    t.string   "status"
+    t.integer  "amazon_product_id"
+    t.text     "html_src"
+    t.datetime "created_at",                            null: false
+    t.datetime "updated_at",                            null: false
+    t.string   "author"
+    t.string   "book_binding"
+    t.string   "book_depot_list_price"
+    t.integer  "qty_avail"
+    t.string   "title"
+    t.string   "image_src"
+    t.boolean  "details_loaded",        default: false
+    t.float    "wholesale"
   end
 
 end

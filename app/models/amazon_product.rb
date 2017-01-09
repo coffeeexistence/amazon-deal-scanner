@@ -6,10 +6,14 @@ class AmazonProduct < ApplicationRecord
   scope :pending, -> { where(status: 'pending') }
   scope :ready, -> { where(status: 'ready') }
   scope :broken, -> { where(status: 'broken') }
+  scope :has_sales_rank, -> { where.not(sales_rank: nil) }
   scope :search_due, -> {
     where('last_indexed_for_deals < ?', DateTime.now - 7.days)
     .or self.where(last_indexed_for_deals: nil)
   }
+  
+  # Make sure all ready items have discounted price
+  # get new ebay deals from that
   
   def amazon_url
     JSON.parse(self.data)
@@ -33,7 +37,7 @@ class AmazonProduct < ApplicationRecord
   end
   
   def self.find_book_deals
-    books_to_search = self.ready.search_due.books
+    books_to_search = self.all.ready.books.search_due
     
     if books_to_search.any?
       books_to_search.first.find_ebay_deals_by_isbn
@@ -49,27 +53,40 @@ class AmazonProduct < ApplicationRecord
   
   def update_from_api
     begin
-      item_data = AmazonProductApi.item_data_by_asin(asin)
-      url = item_data["ItemLookupResponse"]["Items"]["Item"]["ItemLinks"]["ItemLink"][0]["URL"]
-      attributes = item_data["ItemLookupResponse"]["Items"]["Item"]["ItemAttributes"]
-      self.update_item_data(attributes, url)
+      response = AmazonProductApi.item_data_by_asin(asin)
+      url = response["ItemLookupResponse"]["Items"]["Item"]["ItemLinks"]["ItemLink"][0]["URL"]
+      item_data = response["ItemLookupResponse"]["Items"]["Item"]
+      self.update_item_data(item_data, url)
       self.save
     rescue
-      self.status = 'broken'
-      self.save
+      binding.pry
     end
   end
   
-  def update_item_data(attributes, url)
-    
-    self.data =          attributes.to_json
+  def discounted_price_from_json
+    begin
+      data = JSON.parse(self.data)
+      amount = data["Offers"]["Offer"]["OfferListing"]["Price"]["Amount"]
+      amount.to_i / 100.00
+    rescue
+      false
+    end
+  end
+  
+  def update_item_data(item_data, url)
+    attributes = item_data["ItemAttributes"]
+    self.data =          item_data.to_json
     self.ean =           attributes["EAN"]
     self.upc =           attributes["UPC"]
     self.isbn =          attributes["ISBN"]
     self.title =         attributes["Title"]
     self.product_group = attributes["ProductGroup"]
     self.url = url
-    if attributes["ListPrice"]
+    discounted_price = self.discounted_price_from_json
+    if discounted_price
+      self.status = :ready
+      self.list_price = discounted_price
+    elsif attributes["ListPrice"]
       self.list_price =  attributes["ListPrice"]["Amount"].to_f / 100
       self.currency =    attributes["ListPrice"]["CurrencyCode"]
       self.status = :ready
@@ -87,10 +104,28 @@ class AmazonProduct < ApplicationRecord
   end
   
   def self.create_by_asin_if_unique(asin)
+    duplicate = AmazonProduct.find_by_asin(asin)
     unless AmazonProduct.find_by_asin(asin)
       AmazonProduct.create(asin: asin)
+    else
+      duplicate
     end
   end
+  
+  def self.create_from_sales_rank_data(data)
+    data = data["ItemLookupResponse"]["Items"]["Item"]
+    return unless data
+    if data.is_a?(Array)
+      filtered = data.find_all{|item| item["SalesRank"] }
+      data = filtered.sort_by{|item| item["SalesRank"]}[0]
+    end
+    product = self.create_by_asin_if_unique(data["ASIN"])
+    product.sales_rank = data["SalesRank"]
+    product.save
+    product
+  end
+  
+  
   
   def find_ebay_deals_by_isbn
     return "Selected book not ready" if (self.status != 'ready') or self.isbn.nil?
