@@ -1,0 +1,22 @@
+$color-primary: #9b4dca;
+
+.stats {
+  overflow: hidden;
+  margin: auto;
+  width: 80%;
+  
+  .stat {
+    margin: 15px;
+    font-size: 23px;
+    border-bottom: solid 2px rgba($color-primary, 0.4);
+    
+    .qty {
+      color: $color-primary;
+      min-width: 4em;
+      padding-right: 8px;
+      margin-right: 1em;
+      border-right: solid 2px rgba($color-primary, 0.4);
+      text-align: right;
+    }
+  }
+}

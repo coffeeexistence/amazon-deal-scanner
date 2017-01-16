@@ -2,6 +2,8 @@ class WholesaleBook < ApplicationRecord
   
   belongs_to :amazon_product
   scope :has_amazon_product, -> { where.not(amazon_product_id: nil) }
+  scope :details_loaded, -> { where(details_loaded: true) }
+  scope :details_not_loaded, -> { where.not(details_loaded: true) }
   
   #def self.sellable_from_top
   
@@ -20,15 +22,53 @@ class WholesaleBook < ApplicationRecord
   end
   
   def minimum_profit
-    2.5
+    2
   end
   
-  def viable?
+  def minimum_profit_margin
+    0.35
+  end
+
+  
+  def viable_list_price?
     product = self.amazon_product
     viable_product = (product.sales_rank and product.list_price)
-    return false unless (viable_product and self.wholesale)
+    unless (viable_product and self.wholesale)
+      if !product.sales_rank
+        puts "no sales rank"
+      elsif !product.list_price
+        puts "no list price"
+      elsif !self.wholesale
+        puts "no wholesale price"
+      end
+      return false
+    end
     viable = product.list_price > (self.break_even_point + self.minimum_profit)
     !!viable
+  end
+  
+  def self.viable_list_price
+    self.has_amazon_product.includes(:amazon_product).find_all do |book|
+      book.viable_list_price?
+    end
+  end
+  
+  def competitor_price
+    self.amazon_product.competitor_price
+  end
+  
+  def competitor_price_margin
+    1.0 - ( self.break_even_point / self.competitor_price)
+  end
+  
+  def self.viable_competitor_price
+    self.viable_list_price.find_all do |book|
+      if book.amazon_product.competitor_price
+        book.competitor_price_margin > book.minimum_profit_margin
+      else
+        false
+      end
+    end
   end
   
   def self.sorted_by_sales_rank
@@ -37,10 +77,8 @@ class WholesaleBook < ApplicationRecord
     .sort_by{ |book| book.amazon_product.sales_rank }
   end
   
-  def self.viable_sorted_by_sales_rank
-    valid = self.has_amazon_product.includes(:amazon_product)
-    .find_all{|book| book.viable? }
-    valid.sort_by{ |book| book.amazon_product.sales_rank }
+  def self.viable_list_price_sorted_by_sales_rank
+    self.viable_list_price.sort_by{ |book| book.amazon_product.sales_rank }
   end
   
   def self.create_batch_from_book_depot_page(page_url)
@@ -73,8 +111,12 @@ class WholesaleBook < ApplicationRecord
     end
   end
   
+  def has_competitor_price?
+    self.amazon_product.competitor_price if self.amazon_product
+  end
+  
   def avg_fufillment_cost
-    6.5
+    7.75
   end
   
   def avg_ship_to_amazon_cost
@@ -82,7 +124,7 @@ class WholesaleBook < ApplicationRecord
   end
   
   def avg_shipping_cost
-    0.75
+    1.5
   end
   
   def avg_expenses
@@ -95,9 +137,11 @@ class WholesaleBook < ApplicationRecord
   
   def self.load_amazon_product_details_of_top(number)
     self.sorted_by_sales_rank.first(number).each do |book|
-      unless book.amazon_product_details_loaded
+      unless book.amazon_product_pending
         book.amazon_product.update_from_api
         sleep 1
+      else
+        puts "already loaded"
       end
     end
   end
@@ -106,23 +150,53 @@ class WholesaleBook < ApplicationRecord
     self.amazon_product.status == 'ready'
   end
   
+  def amazon_product_pending
+    self.amazon_product.status == 'pending'
+  end
   
+  
+  def self.scrape_additional_details_of_top(number)
+    self.details_not_loaded.sorted_by_sales_rank.first(number).each do |book|
+      puts "scraping #{book.id}"
+      book.scrape_additional_details
+      sleep 1
+    end
+  end
+  
+  def self.scrape_additional_details_of_all_with_product_details
+    pending_scrape = self.has_amazon_product.includes(:amazon_product).find_all do |book|
+      ready = book.amazon_product.status == 'ready'
+      not_loaded = !book.details_loaded
+      not_loaded && ready
+    end
+    puts "Found #{pending_scrape.count} books to get wholesale data on"
+    pending_scrape.each do |book|
+      puts book.scrape_additional_details
+      sleep 0.5
+    end
+  end
+  
+  # Get wholesale data +
   def scrape_additional_details
     return 'already loaded!' if self.details_loaded
     url = 'http://www.bookdepot.com' + self.url
+    puts "about to open #{url}"
     details = Nokogiri::HTML open(url)
     
     list_items = details.css('.details ul li').map{|li| li.content.strip }
     attributes = list_items.each_with_object({}) do |a, hash|
       key_value = a.split(':')
-      return false if key_value.count != 2
-      key = key_value[0].parameterize.gsub('-', '_')
-      value = key_value[1].strip
-      hash[key] = value
+      if key_value.count == 2
+        key = key_value[0].parameterize.gsub('-', '_')
+        value = key_value[1].strip
+        hash[key] = value
+      end
     end
     
     image = details.css('#mainCover')[0]
-    price_matches = attributes['our_price'].match(/\$(\d\.\d\d) USD/)
+    price = attributes['our_price']
+    return "No price section found" unless price
+    price_matches = price.match(/\$(\d\.\d\d) USD/)
     wholesale = nil
     wholesale = price_matches[1].to_f if price_matches
     

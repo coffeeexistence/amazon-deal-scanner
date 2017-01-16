@@ -1,0 +1,7 @@
+<div class="stats">
+  <% @stats.each do |stat| %>
+    <div class="row stat">
+      <span class="qty"><%= stat[1] %></span><%= stat[0] %>
+    </div>
+  <% end %>
+</div>

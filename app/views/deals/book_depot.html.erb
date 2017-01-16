@@ -8,7 +8,7 @@
           <%= image_tag book.image_src, class: "book-cover-photo" %>
           <div class="column">
             <h4><%= book.title %></h4>
-            <h4 class="sales-rank">Sales Rank: <span><%= book.amazon_product.sales_rank %></span></h4>
+            <h4 class="sales-rank">Sales Rank: <span><%= book.amazon_product.sales_rank.to_i / 1000 %>k</span></h4>
           </div>
           <div class="column book-links">
             <a href="<%= 'http://www.bookdepot.com' + book.url %>">
@@ -26,26 +26,32 @@
           <h4>Break-even:</h4>
           <h4>$<%= number_with_precision(book.break_even_point, :precision => 2) %></h4>
         </div>
-        <div class="column">
-          <h4>Amazon:</h4>
-          <h4>$<%= number_with_precision(book.amazon_product.list_price, :precision => 2) %></h4>
-        </div>
         <% if book.amazon_product.competitor_price %>
         <div class="column">
           <h4>Competition:</h4>
           <h4>$<%= number_with_precision(book.amazon_product.competitor_price, :precision => 2) %></h4>
         </div>
+        <div class="column">
+          <h4>Margin:</h4>
+          <h4><%= (book.competitor_price_margin * 100).to_i  %>%</h4>
+        </div>
         <% end %>
+
         <div class="column">
           <h4>Wholesale:</h4>
           <h4>$<%= number_with_precision(book.wholesale, :precision => 2) %></h4>
         </div>
-        
-        <% end %>
+        <% else %>
+        <div class="column">
+          <h4>Amazon:</h4>
+          <h4>$<%= number_with_precision(book.amazon_product.list_price, :precision => 2) %></h4>
+        </div>
         <div class="column">
           <h4>ASIN:</h4>
           <h4><%= book.amazon_product.asin %></h4>
         </div>
+        <% end %>
+        
       </div>
       <br>
     
